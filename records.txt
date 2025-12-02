@@ -1,0 +1,9 @@
+Alice 85
+Bob    73
+Charlie      91
+Diana  100
+Eve  40
+BADLINE
+Frank seventy
+Gina  -5
+Henry   105
