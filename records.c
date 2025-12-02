@@ -28,12 +28,24 @@ int parse_int(const char *str, int *value) {
     }
 
     /* TODO: extract digits and compute num */
+    for(size_t j = i; j < len; j++){
+      if(str[j] >= '0' && str[j] <= '9'){
+         has_digit++;
+         num = num * 10 + str[j] - '0';
+      }else{
+         return 0;
+      }
 
+    }
+    
     /* TODO: require at least one digit */
-
+    if(has_digit <= 0){
+      return 0;
+    }
     /* TODO: assign *value */
+    *value = num;
 
-    return 0; /* replace when implemented */
+    return 1; /* replace when implemented */
 }
 
 /* ============================================================
@@ -53,12 +65,25 @@ int parse_name(const char *line, char *name, int *index) {
         i++;
     }
 
-    /* TODO: copy alphabetic characters into name[] */
 
+    while (i < len && ((line[i] >= 'a' && line[i] <= 'z') || (line[i] >= 'A' && line[i] <= 'Z'))){
+      /* TODO: copy alphabetic characters into name[] */
+      if(j < sizeof(name)/sizeof(char)){
+         name[j] = line[i];
+         i++;
+         j++; 
+      }else{
+         break;
+      }
+    }
+    
     name[j] = '\0';
     *index = i;
 
     /* TODO: return 1 if name length > 0 */
+    if (strlen(name) > 0){
+      return 1;
+    }
     return 0;
 }
 
@@ -75,13 +100,30 @@ int parse_grade(const char *line, int *grade, int *index) {
     int j = 0;
 
     /* TODO: skip leading spaces */
+    while (i < len && (line[i] == ' ' || line[i] == '\r')) {
+        i++;
+    }
 
     /* TODO: extract token into buf[] */
-
+    while (i < len && line[i] != ' ' && line[i] != '\n' && line[i] != '\r'){
+      if(j < sizeof(buf)/sizeof(char)){
+         buf[j] = line[i];
+         i++;
+         j++;
+      }else{
+         break;
+      }
+    }
     buf[j] = '\0';
     *index = i;
-
+    int temp = -1;
     /* TODO: call parse_int and check range */
+    if(parse_int(buf, &temp)){
+      if(temp >= 0 && temp <= 100){
+         *grade = temp;
+         return 1;
+      }
+    }
 
     return 0;
 }
