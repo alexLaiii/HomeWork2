@@ -23,20 +23,24 @@ int parse_int(const char *str, int *value) {
     int has_digit = 0;
 
     /* Skip leading spaces or '\r' */
-    while (i < len && (str[i] == ' ' || str[i] == '\r')) {
+    while (i < len && (str[i] == '\n' || str[i] == ' ' || str[i] == '\r')) {
         i++;
     }
 
     /* TODO: extract digits and compute num */
-    for(size_t j = i; j < len; j++){
-      if(str[j] >= '0' && str[j] <= '9'){
-         has_digit++;
-         num = num * 10 + str[j] - '0';
-      }else{
-         return 0;
-      }
-
+    while (i < len && str[i] >= '0' && str[i] <= '9' ){
+      has_digit++;
+      num = num * 10 + str[i] - '0';
+      i++;
     }
+   //  for(size_t j = i; j < len; j++){
+   //    if(str[j] >= '0' && str[j] <= '9'){
+   //       has_digit++;
+   //       num = num * 10 + str[j] - '0';
+   //    }else{
+   //       return 0;
+   //    }
+   //}
     
     /* TODO: require at least one digit */
     if(has_digit <= 0){
@@ -68,7 +72,9 @@ int parse_name(const char *line, char *name, int *index) {
 
     while (i < len && ((line[i] >= 'a' && line[i] <= 'z') || (line[i] >= 'A' && line[i] <= 'Z'))){
       /* TODO: copy alphabetic characters into name[] */
-      if(j < sizeof(name)/sizeof(char)){
+
+      // the passing name size appears to be always 50
+      if(j < 49){
          name[j] = line[i];
          i++;
          j++; 
@@ -100,7 +106,7 @@ int parse_grade(const char *line, int *grade, int *index) {
     int j = 0;
 
     /* TODO: skip leading spaces */
-    while (i < len && (line[i] == ' ' || line[i] == '\r')) {
+    while (i < len && (line[i] == '\n' || line[i] == ' ' || line[i] == '\r')) {
         i++;
     }
 
@@ -148,11 +154,21 @@ void process_file(const char *input_filename, const char *output_filename) {
        - open input file with fopen()
        - check if NULL → print error and return
     */
+   FILE *input_f = fopen(input_filename, "r");
+   if(!input_f){
+      perror("fopen() for input file failed");
+      return;
+   }
 
     /* TODO:
        - open output file with fopen()
        - check if NULL → close input file and return
     */
+   FILE *output_f = fopen(output_filename, "w");
+   if(!output_f){
+      perror("fopen() for output file failed");
+      return;
+   }
 
     /* Suggested local variables: */
     char line[200];
@@ -171,13 +187,58 @@ void process_file(const char *input_filename, const char *output_filename) {
            - Update valid/invalid and sum
     */
 
+    // Assume each line has at most 99 characters
+ 
+   while (fgets(line, 100, input_f) != NULL){
+      int idx = 0;
+      char name[50];
+      int grade;
+      if(!parse_name(line, name, &idx)){
+         invalid++;
+         continue;
+      }
+      if(!parse_grade(line, &grade, &idx)){
+         invalid++;
+         continue;
+      }
+      sum += grade;
+      valid++;
+      
+   }
+   if (ferror(input_f)) {
+      fprintf(stderr, "I/O error");
+   }
+
     /* TODO:
        - compute average
        - write correct output format to summary file
     */
+   float avg = 0.0;
+   if (valid > 0){
+      avg = (float)sum / valid;
+   }
+   char buf[100];
+   sprintf(buf, "VALID: %d\n", valid);
+   fputs(buf, output_f);
+   if (ferror(output_f)) {
+      fprintf(stderr, "I/O error");
+   }
+   sprintf(buf, "INVALID: %d\n", invalid);
+   fputs(buf, output_f);
+   if (ferror(output_f)) {
+      fprintf(stderr, "I/O error");
+   }
+   sprintf(buf, "AVERAGE: %.2f\n", avg);
+   fputs(buf, output_f);
+   if (ferror(output_f)) {
+      fprintf(stderr, "I/O error");
+   }
 
     /* TODO:
        - close files
     */
+   fclose(input_f);
+   fclose(output_f);
+   
 }
 
